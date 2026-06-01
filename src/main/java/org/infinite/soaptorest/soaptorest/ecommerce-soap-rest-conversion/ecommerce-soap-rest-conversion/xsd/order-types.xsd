@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://ecommerce.example.com/types/order"
+           xmlns:cmn="http://ecommerce.example.com/types/common"
+           xmlns:cat="http://ecommerce.example.com/types/catalog"
+           targetNamespace="http://ecommerce.example.com/types/order"
+           elementFormDefault="qualified">
+
+  <xs:import namespace="http://ecommerce.example.com/types/common"
+             schemaLocation="common-types.xsd"/>
+  <xs:import namespace="http://ecommerce.example.com/types/catalog"
+             schemaLocation="catalog-types.xsd"/>
+
+  <!-- ============================================================ -->
+  <!-- ENUMERATIONS                                                 -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="OrderStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DRAFT"/>
+      <xs:enumeration value="PENDING_PAYMENT"/>
+      <xs:enumeration value="PAYMENT_RECEIVED"/>
+      <xs:enumeration value="PROCESSING"/>
+      <xs:enumeration value="PARTIALLY_SHIPPED"/>
+      <xs:enumeration value="SHIPPED"/>
+      <xs:enumeration value="DELIVERED"/>
+      <xs:enumeration value="COMPLETED"/>
+      <xs:enumeration value="CANCELLED"/>
+      <xs:enumeration value="REFUNDED"/>
+      <xs:enumeration value="ON_HOLD"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="FulfillmentStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UNFULFILLED"/>
+      <xs:enumeration value="PARTIALLY_FULFILLED"/>
+      <xs:enumeration value="FULFILLED"/>
+      <xs:enumeration value="RETURNED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PaymentStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="UNPAID"/>
+      <xs:enumeration value="PARTIALLY_PAID"/>
+      <xs:enumeration value="PAID"/>
+      <xs:enumeration value="OVERDUE"/>
+      <xs:enumeration value="REFUNDED"/>
+      <xs:enumeration value="PARTIALLY_REFUNDED"/>
+      <xs:enumeration value="VOIDED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ShippingMethodType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STANDARD"/>
+      <xs:enumeration value="EXPRESS"/>
+      <xs:enumeration value="OVERNIGHT"/>
+      <xs:enumeration value="FREE"/>
+      <xs:enumeration value="PICKUP_IN_STORE"/>
+      <xs:enumeration value="SAME_DAY"/>
+      <xs:enumeration value="ECONOMY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DiscountTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PERCENTAGE"/>
+      <xs:enumeration value="FIXED_AMOUNT"/>
+      <xs:enumeration value="FREE_SHIPPING"/>
+      <xs:enumeration value="BUY_X_GET_Y"/>
+      <xs:enumeration value="BUNDLE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ReturnReasonType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DEFECTIVE"/>
+      <xs:enumeration value="NOT_AS_DESCRIBED"/>
+      <xs:enumeration value="WRONG_ITEM"/>
+      <xs:enumeration value="CHANGED_MIND"/>
+      <xs:enumeration value="DAMAGED_IN_SHIPPING"/>
+      <xs:enumeration value="ARRIVED_LATE"/>
+      <xs:enumeration value="OTHER"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="RefundMethodType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ORIGINAL_PAYMENT"/>
+      <xs:enumeration value="STORE_CREDIT"/>
+      <xs:enumeration value="GIFT_CARD"/>
+      <xs:enumeration value="BANK_TRANSFER"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ============================================================ -->
+  <!-- COUPON / DISCOUNT                                           -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="AppliedDiscountType">
+    <xs:sequence>
+      <xs:element name="DiscountId"    type="cmn:UUIDType"/>
+      <xs:element name="Code"          type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="DiscountType"  type="tns:DiscountTypeEnum"/>
+      <xs:element name="Description"   type="cmn:ShortStringType"/>
+      <xs:element name="DiscountValue" type="cmn:MoneyType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AppliedDiscountListType">
+    <xs:sequence>
+      <xs:element name="Discount" type="tns:AppliedDiscountType"
+                  minOccurs="0" maxOccurs="10"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- ORDER LINE ITEM                                             -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="OrderLineItemType">
+    <xs:sequence>
+      <xs:element name="LineItemId"     type="cmn:UUIDType"/>
+      <xs:element name="ProductId"      type="cmn:UUIDType"/>
+      <xs:element name="VariantId"      type="cmn:UUIDType"        minOccurs="0"/>
+      <xs:element name="SKU"            type="cmn:ShortStringType"/>
+      <xs:element name="ProductName"    type="cmn:ShortStringType"/>
+      <xs:element name="VariantOptions" type="cmn:AttributeListType" minOccurs="0"/>
+      <xs:element name="Quantity"       type="cmn:QuantityType"/>
+      <xs:element name="UnitPrice"      type="cmn:MoneyType"/>
+      <xs:element name="OriginalPrice"  type="cmn:MoneyType"       minOccurs="0"/>
+      <xs:element name="TaxAmount"      type="cmn:MoneyType"       minOccurs="0"/>
+      <xs:element name="DiscountAmount" type="cmn:MoneyType"       minOccurs="0"/>
+      <xs:element name="LineTotal"      type="cmn:MoneyType"/>
+      <xs:element name="IsDigital"      type="xs:boolean"          default="false"/>
+      <xs:element name="WarehouseId"    type="cmn:UUIDType"        minOccurs="0"/>
+      <xs:element name="FulfillmentStatus" type="tns:FulfillmentStatusType" default="UNFULFILLED"/>
+      <xs:element name="Notes"          type="cmn:LongTextType"    minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="OrderLineItemListType">
+    <xs:sequence>
+      <xs:element name="LineItem" type="tns:OrderLineItemType"
+                  minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- SHIPPING                                                    -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="ShipmentTrackingEventType">
+    <xs:sequence>
+      <xs:element name="EventCode"      type="xs:string"/>
+      <xs:element name="Description"    type="cmn:ShortStringType"/>
+      <xs:element name="Location"       type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="OccurredAt"     type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ShipmentType">
+    <xs:sequence>
+      <xs:element name="ShipmentId"      type="cmn:UUIDType"/>
+      <xs:element name="OrderId"         type="cmn:UUIDType"/>
+      <xs:element name="CarrierCode"     type="cmn:ShortStringType"/>
+      <xs:element name="CarrierName"     type="cmn:ShortStringType"/>
+      <xs:element name="TrackingNumber"  type="xs:string"          minOccurs="0"/>
+      <xs:element name="TrackingUrl"     type="cmn:UrlType"        minOccurs="0"/>
+      <xs:element name="ShippedAt"       type="xs:dateTime"        minOccurs="0"/>
+      <xs:element name="EstimatedDelivery" type="xs:date"          minOccurs="0"/>
+      <xs:element name="DeliveredAt"     type="xs:dateTime"        minOccurs="0"/>
+      <xs:element name="ShippingAddress" type="cmn:AddressType"/>
+      <xs:element name="WeightKg"        type="cmn:WeightType"     minOccurs="0"/>
+      <xs:element name="TrackingHistory">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Event" type="tns:ShipmentTrackingEventType"
+                        minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="LineItemIds">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="LineItemId" type="cmn:UUIDType"
+                        minOccurs="1" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ShipmentListType">
+    <xs:sequence>
+      <xs:element name="Shipment" type="tns:ShipmentType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- PAYMENT TRANSACTION                                         -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="TransactionTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AUTHORIZATION"/>
+      <xs:enumeration value="CAPTURE"/>
+      <xs:enumeration value="SALE"/>
+      <xs:enumeration value="REFUND"/>
+      <xs:enumeration value="VOID"/>
+      <xs:enumeration value="CHARGEBACK"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="PaymentTransactionType">
+    <xs:sequence>
+      <xs:element name="TransactionId"     type="cmn:UUIDType"/>
+      <xs:element name="GatewayRef"        type="xs:string"/>
+      <xs:element name="TransactionType"   type="tns:TransactionTypeEnum"/>
+      <xs:element name="Amount"            type="cmn:MoneyType"/>
+      <xs:element name="PaymentMethodRef"  type="xs:string"/>
+      <xs:element name="PaymentMethodType" type="xs:string"/>
+      <xs:element name="GatewayCode"       type="xs:string"/>
+      <xs:element name="GatewayMessage"    type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="ProcessedAt"       type="xs:dateTime"/>
+      <xs:element name="Metadata"          type="cmn:AttributeListType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PaymentTransactionListType">
+    <xs:sequence>
+      <xs:element name="Transaction" type="tns:PaymentTransactionType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- ORDER TOTALS                                                -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="OrderTotalsType">
+    <xs:sequence>
+      <xs:element name="SubTotal"       type="cmn:MoneyType"/>
+      <xs:element name="ShippingTotal"  type="cmn:MoneyType"/>
+      <xs:element name="TaxTotal"       type="cmn:MoneyType"/>
+      <xs:element name="DiscountTotal"  type="cmn:MoneyType"/>
+      <xs:element name="GrandTotal"     type="cmn:MoneyType"/>
+      <xs:element name="AmountPaid"     type="cmn:MoneyType"/>
+      <xs:element name="AmountRefunded" type="cmn:MoneyType"/>
+      <xs:element name="BalanceDue"     type="cmn:MoneyType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- RETURN / RMA                                                -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="ReturnLineItemType">
+    <xs:sequence>
+      <xs:element name="LineItemId"  type="cmn:UUIDType"/>
+      <xs:element name="Quantity"    type="cmn:QuantityType"/>
+      <xs:element name="Reason"      type="tns:ReturnReasonType"/>
+      <xs:element name="Notes"       type="cmn:LongTextType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ReturnRequestType">
+    <xs:sequence>
+      <xs:element name="ReturnId"     type="cmn:UUIDType"/>
+      <xs:element name="OrderId"      type="cmn:UUIDType"/>
+      <xs:element name="LineItems">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ReturnItem" type="tns:ReturnLineItemType"
+                        minOccurs="1" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RefundMethod"  type="tns:RefundMethodType"/>
+      <xs:element name="RefundAmount"  type="cmn:MoneyType"       minOccurs="0"/>
+      <xs:element name="Status"        type="cmn:StatusCodeType"/>
+      <xs:element name="RMANumber"     type="xs:string"           minOccurs="0"/>
+      <xs:element name="Audit"         type="cmn:AuditType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- ORDER (main entity)                                         -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="OrderType">
+    <xs:sequence>
+      <xs:element name="OrderId"          type="cmn:UUIDType"/>
+      <xs:element name="OrderNumber"      type="cmn:ShortStringType"/>
+      <xs:element name="CustomerId"       type="cmn:UUIDType"/>
+      <xs:element name="Channel"          type="cmn:ShortStringType"/>
+      <xs:element name="Status"           type="tns:OrderStatusType"/>
+      <xs:element name="PaymentStatus"    type="tns:PaymentStatusType"/>
+      <xs:element name="FulfillmentStatus" type="tns:FulfillmentStatusType"/>
+      <xs:element name="LineItems"        type="tns:OrderLineItemListType"/>
+      <xs:element name="ShippingAddress"  type="cmn:AddressType"/>
+      <xs:element name="BillingAddress"   type="cmn:AddressType"/>
+      <xs:element name="ShippingMethod"   type="tns:ShippingMethodType"/>
+      <xs:element name="ShippingCarrier"  type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="Totals"           type="tns:OrderTotalsType"/>
+      <xs:element name="AppliedDiscounts" type="tns:AppliedDiscountListType" minOccurs="0"/>
+      <xs:element name="Transactions"     type="tns:PaymentTransactionListType" minOccurs="0"/>
+      <xs:element name="Shipments"        type="tns:ShipmentListType" minOccurs="0"/>
+      <xs:element name="Returns"          type="tns:ReturnRequestType" minOccurs="0"/>
+      <xs:element name="CustomerNote"     type="cmn:LongTextType"  minOccurs="0"/>
+      <xs:element name="InternalNote"     type="cmn:LongTextType"  minOccurs="0"/>
+      <xs:element name="Tags"             type="cmn:AttributeListType" minOccurs="0"/>
+      <xs:element name="CustomerIP"       type="cmn:IPv4Type"      minOccurs="0"/>
+      <xs:element name="PlacedAt"         type="xs:dateTime"/>
+      <xs:element name="Audit"            type="cmn:AuditType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- REQUEST / RESPONSE WRAPPERS                                 -->
+  <!-- ============================================================ -->
+
+  <!-- Place Order -->
+  <xs:complexType name="PlaceOrderRequestType">
+    <xs:sequence>
+      <xs:element name="CustomerId"      type="cmn:UUIDType"/>
+      <xs:element name="CartId"          type="cmn:UUIDType"/>
+      <xs:element name="ShippingAddress" type="cmn:AddressType"/>
+      <xs:element name="BillingAddress"  type="cmn:AddressType"/>
+      <xs:element name="ShippingMethod"  type="tns:ShippingMethodType"/>
+      <xs:element name="PaymentMethodId" type="cmn:UUIDType"/>
+      <xs:element name="CouponCodes">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="cmn:ShortStringType"
+                        minOccurs="0" maxOccurs="5"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CustomerNote"    type="cmn:LongTextType" minOccurs="0"/>
+      <xs:element name="LoyaltyPointsToRedeem" type="xs:nonNegativeInteger" default="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PlaceOrderResponseType">
+    <xs:sequence>
+      <xs:element name="Header" type="cmn:ResponseHeaderType"/>
+      <xs:element name="Order"  type="tns:OrderType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Get Order -->
+  <xs:complexType name="GetOrderRequestType">
+    <xs:sequence>
+      <xs:element name="OrderId"     type="cmn:UUIDType" minOccurs="0"/>
+      <xs:element name="OrderNumber" type="cmn:ShortStringType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GetOrderResponseType">
+    <xs:sequence>
+      <xs:element name="Header" type="cmn:ResponseHeaderType"/>
+      <xs:element name="Order"  type="tns:OrderType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Search Orders -->
+  <xs:complexType name="SearchOrdersRequestType">
+    <xs:sequence>
+      <xs:element name="CustomerId"       type="cmn:UUIDType"           minOccurs="0"/>
+      <xs:element name="Status"           type="tns:OrderStatusType"    minOccurs="0"/>
+      <xs:element name="PaymentStatus"    type="tns:PaymentStatusType"  minOccurs="0"/>
+      <xs:element name="FulfillmentStatus" type="tns:FulfillmentStatusType" minOccurs="0"/>
+      <xs:element name="PlacedDateRange"  type="cmn:DateRangeType"      minOccurs="0"/>
+      <xs:element name="MinOrderValue"    type="cmn:MoneyAmountType"    minOccurs="0"/>
+      <xs:element name="MaxOrderValue"    type="cmn:MoneyAmountType"    minOccurs="0"/>
+      <xs:element name="Channel"          type="cmn:ShortStringType"    minOccurs="0"/>
+      <xs:element name="Pagination"       type="cmn:PaginationType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="OrderListType">
+    <xs:sequence>
+      <xs:element name="Order" type="tns:OrderType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SearchOrdersResponseType">
+    <xs:sequence>
+      <xs:element name="Header"   type="cmn:ResponseHeaderType"/>
+      <xs:element name="Orders"   type="tns:OrderListType" minOccurs="0"/>
+      <xs:element name="PageMeta" type="cmn:PageMetaType"  minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Update Order Status -->
+  <xs:complexType name="UpdateOrderStatusRequestType">
+    <xs:sequence>
+      <xs:element name="OrderId"  type="cmn:UUIDType"/>
+      <xs:element name="Status"   type="tns:OrderStatusType"/>
+      <xs:element name="Note"     type="cmn:LongTextType" minOccurs="0"/>
+      <xs:element name="NotifyCustomer" type="xs:boolean" default="true"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="UpdateOrderStatusResponseType">
+    <xs:sequence>
+      <xs:element name="Header" type="cmn:ResponseHeaderType"/>
+      <xs:element name="Order"  type="tns:OrderType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Create Return -->
+  <xs:complexType name="CreateReturnRequestType">
+    <xs:sequence>
+      <xs:element name="OrderId"      type="cmn:UUIDType"/>
+      <xs:element name="LineItems">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ReturnItem" type="tns:ReturnLineItemType"
+                        minOccurs="1" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RefundMethod"  type="tns:RefundMethodType"/>
+      <xs:element name="CustomerNote"  type="cmn:LongTextType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CreateReturnResponseType">
+    <xs:sequence>
+      <xs:element name="Header" type="cmn:ResponseHeaderType"/>
+      <xs:element name="Return" type="tns:ReturnRequestType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Global elements -->
+  <xs:element name="PlaceOrderRequest"          type="tns:PlaceOrderRequestType"/>
+  <xs:element name="PlaceOrderResponse"         type="tns:PlaceOrderResponseType"/>
+  <xs:element name="GetOrderRequest"            type="tns:GetOrderRequestType"/>
+  <xs:element name="GetOrderResponse"           type="tns:GetOrderResponseType"/>
+  <xs:element name="SearchOrdersRequest"        type="tns:SearchOrdersRequestType"/>
+  <xs:element name="SearchOrdersResponse"       type="tns:SearchOrdersResponseType"/>
+  <xs:element name="UpdateOrderStatusRequest"   type="tns:UpdateOrderStatusRequestType"/>
+  <xs:element name="UpdateOrderStatusResponse"  type="tns:UpdateOrderStatusResponseType"/>
+  <xs:element name="CreateReturnRequest"        type="tns:CreateReturnRequestType"/>
+  <xs:element name="CreateReturnResponse"       type="tns:CreateReturnResponseType"/>
+
+</xs:schema>

@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://ecommerce.example.com/types/catalog"
+           xmlns:cmn="http://ecommerce.example.com/types/common"
+           targetNamespace="http://ecommerce.example.com/types/catalog"
+           elementFormDefault="qualified">
+
+  <xs:import namespace="http://ecommerce.example.com/types/common"
+             schemaLocation="common-types.xsd"/>
+
+  <!-- ============================================================ -->
+  <!-- ENUMERATIONS                                                 -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="ProductStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DRAFT"/>
+      <xs:enumeration value="ACTIVE"/>
+      <xs:enumeration value="INACTIVE"/>
+      <xs:enumeration value="OUT_OF_STOCK"/>
+      <xs:enumeration value="DISCONTINUED"/>
+      <xs:enumeration value="PENDING_APPROVAL"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ProductTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PHYSICAL"/>
+      <xs:enumeration value="DIGITAL"/>
+      <xs:enumeration value="SERVICE"/>
+      <xs:enumeration value="BUNDLE"/>
+      <xs:enumeration value="SUBSCRIPTION"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ConditionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="NEW"/>
+      <xs:enumeration value="REFURBISHED"/>
+      <xs:enumeration value="USED_LIKE_NEW"/>
+      <xs:enumeration value="USED_GOOD"/>
+      <xs:enumeration value="USED_ACCEPTABLE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TaxClassType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STANDARD"/>
+      <xs:enumeration value="REDUCED"/>
+      <xs:enumeration value="ZERO"/>
+      <xs:enumeration value="EXEMPT"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="StockPolicyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TRACK"/>
+      <xs:enumeration value="DO_NOT_TRACK"/>
+      <xs:enumeration value="CONTINUE_SELLING"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ReviewStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PENDING"/>
+      <xs:enumeration value="APPROVED"/>
+      <xs:enumeration value="REJECTED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ============================================================ -->
+  <!-- CATEGORY                                                    -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="CategoryType">
+    <xs:sequence>
+      <xs:element name="CategoryId"   type="cmn:UUIDType"/>
+      <xs:element name="ParentId"     type="cmn:UUIDType"         minOccurs="0"/>
+      <xs:element name="Slug"         type="cmn:ShortStringType"/>
+      <xs:element name="Name"         type="cmn:ShortStringType"/>
+      <xs:element name="Description"  type="cmn:LongTextType"     minOccurs="0"/>
+      <xs:element name="Level"        type="xs:nonNegativeInteger"/>
+      <xs:element name="SortOrder"    type="xs:nonNegativeInteger" default="0"/>
+      <xs:element name="IsActive"     type="xs:boolean"           default="true"/>
+      <xs:element name="ImageUrl"     type="cmn:UrlType"          minOccurs="0"/>
+      <xs:element name="MetaTitle"    type="cmn:ShortStringType"  minOccurs="0"/>
+      <xs:element name="MetaDesc"     type="cmn:LongTextType"     minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CategoryRefListType">
+    <xs:sequence>
+      <xs:element name="CategoryId" type="cmn:UUIDType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- VARIANT / SKU                                               -->
+  <!-- ============================================================ -->
+
+  <!-- A single option definition, e.g. "Color" with values ["Red","Blue"] -->
+  <xs:complexType name="VariantOptionType">
+    <xs:sequence>
+      <xs:element name="OptionName"  type="cmn:ShortStringType"/>
+      <xs:element name="OptionValue" type="cmn:ShortStringType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VariantOptionListType">
+    <xs:sequence>
+      <xs:element name="Option" type="tns:VariantOptionType" minOccurs="1" maxOccurs="10"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Inventory per warehouse location -->
+  <xs:complexType name="LocationStockType">
+    <xs:sequence>
+      <xs:element name="WarehouseId"  type="cmn:UUIDType"/>
+      <xs:element name="Quantity"     type="cmn:QuantityType"/>
+      <xs:element name="Reserved"     type="cmn:QuantityType" default="0"/>
+      <xs:element name="Available"    type="cmn:QuantityType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="LocationStockListType">
+    <xs:sequence>
+      <xs:element name="LocationStock" type="tns:LocationStockType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- SKU / Variant -->
+  <xs:complexType name="ProductVariantType">
+    <xs:sequence>
+      <xs:element name="VariantId"    type="cmn:UUIDType"/>
+      <xs:element name="SKU"          type="cmn:ShortStringType"/>
+      <xs:element name="Barcode"      type="xs:string"          minOccurs="0"/>
+      <xs:element name="Options"      type="tns:VariantOptionListType"/>
+      <xs:element name="PriceAdjust"  type="cmn:MoneyType"      minOccurs="0"/>
+      <xs:element name="WeightKg"     type="cmn:WeightType"     minOccurs="0"/>
+      <xs:element name="Dimensions"   type="cmn:DimensionsType" minOccurs="0"/>
+      <xs:element name="StockPolicy"  type="tns:StockPolicyType" default="TRACK"/>
+      <xs:element name="TotalStock"   type="cmn:QuantityType"/>
+      <xs:element name="LocationStock" type="tns:LocationStockListType"/>
+      <xs:element name="Images"       type="cmn:ImageListType"  minOccurs="0"/>
+      <xs:element name="IsActive"     type="xs:boolean" default="true"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ProductVariantListType">
+    <xs:sequence>
+      <xs:element name="Variant" type="tns:ProductVariantType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- PRICING                                                     -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="PriceTierType">
+    <xs:sequence>
+      <xs:element name="MinQuantity" type="cmn:QuantityType"/>
+      <xs:element name="Price"       type="cmn:MoneyType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PriceTierListType">
+    <xs:sequence>
+      <xs:element name="Tier" type="tns:PriceTierType" minOccurs="0" maxOccurs="10"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ProductPricingType">
+    <xs:sequence>
+      <xs:element name="BasePrice"        type="cmn:MoneyType"/>
+      <xs:element name="SalePrice"        type="cmn:MoneyType"       minOccurs="0"/>
+      <xs:element name="CostPrice"        type="cmn:MoneyType"       minOccurs="0"/>
+      <xs:element name="MSRP"             type="cmn:MoneyType"       minOccurs="0"/>
+      <xs:element name="TaxClass"         type="tns:TaxClassType"    default="STANDARD"/>
+      <xs:element name="TaxRate"          type="cmn:PercentageType"  minOccurs="0"/>
+      <xs:element name="IsTaxInclusive"   type="xs:boolean"          default="false"/>
+      <xs:element name="VolumeTiers"      type="tns:PriceTierListType" minOccurs="0"/>
+      <xs:element name="SaleStartDate"    type="xs:dateTime"         minOccurs="0"/>
+      <xs:element name="SaleEndDate"      type="xs:dateTime"         minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- DIGITAL PRODUCT                                             -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="DigitalDeliveryType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DOWNLOAD"/>
+      <xs:enumeration value="STREAM"/>
+      <xs:enumeration value="LICENSE_KEY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="DigitalAssetType">
+    <xs:sequence>
+      <xs:element name="AssetId"       type="cmn:UUIDType"/>
+      <xs:element name="FileName"      type="cmn:ShortStringType"/>
+      <xs:element name="FileSizeBytes" type="xs:long"/>
+      <xs:element name="MimeType"      type="xs:string"/>
+      <xs:element name="DeliveryType"  type="tns:DigitalDeliveryType"/>
+      <xs:element name="MaxDownloads"  type="xs:positiveInteger"  minOccurs="0"/>
+      <xs:element name="ExpiryHours"   type="xs:positiveInteger"  minOccurs="0"/>
+      <xs:element name="DownloadUrl"   type="cmn:UrlType"         minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- REVIEWS                                                     -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="ProductReviewType">
+    <xs:sequence>
+      <xs:element name="ReviewId"     type="cmn:UUIDType"/>
+      <xs:element name="ProductId"    type="cmn:UUIDType"/>
+      <xs:element name="CustomerId"   type="cmn:UUIDType"/>
+      <xs:element name="OrderItemId"  type="cmn:UUIDType"  minOccurs="0"/>
+      <xs:element name="Rating"       type="xs:integer">
+        <!-- 1-5 stars enforced via type -->
+      </xs:element>
+      <xs:element name="Title"        type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="Body"         type="cmn:LongTextType"    minOccurs="0"/>
+      <xs:element name="VerifiedPurchase" type="xs:boolean"      default="false"/>
+      <xs:element name="HelpfulVotes" type="xs:nonNegativeInteger" default="0"/>
+      <xs:element name="Status"       type="tns:ReviewStatusType"/>
+      <xs:element name="Images"       type="cmn:ImageListType"   minOccurs="0"/>
+      <xs:element name="Audit"        type="cmn:AuditType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ReviewSummaryType">
+    <xs:sequence>
+      <xs:element name="AverageRating"    type="xs:decimal"/>
+      <xs:element name="TotalReviews"     type="xs:nonNegativeInteger"/>
+      <xs:element name="RatingBreakdown">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Five"  type="xs:nonNegativeInteger"/>
+            <xs:element name="Four"  type="xs:nonNegativeInteger"/>
+            <xs:element name="Three" type="xs:nonNegativeInteger"/>
+            <xs:element name="Two"   type="xs:nonNegativeInteger"/>
+            <xs:element name="One"   type="xs:nonNegativeInteger"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- SEO                                                         -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="SeoMetaType">
+    <xs:sequence>
+      <xs:element name="Slug"         type="cmn:ShortStringType"/>
+      <xs:element name="MetaTitle"    type="cmn:ShortStringType"  minOccurs="0"/>
+      <xs:element name="MetaDesc"     type="cmn:LongTextType"     minOccurs="0"/>
+      <xs:element name="Keywords"     type="xs:string"            minOccurs="0"/>
+      <xs:element name="CanonicalUrl" type="cmn:UrlType"          minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- PRODUCT (main entity)                                       -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="ProductType">
+    <xs:sequence>
+      <xs:element name="ProductId"    type="cmn:UUIDType"/>
+      <xs:element name="ExternalId"   type="cmn:ShortStringType"  minOccurs="0"/>
+      <xs:element name="Name"         type="cmn:ShortStringType"/>
+      <xs:element name="ShortDesc"    type="cmn:ShortStringType"  minOccurs="0"/>
+      <xs:element name="Description"  type="cmn:LongTextType"     minOccurs="0"/>
+      <xs:element name="Brand"        type="cmn:ShortStringType"  minOccurs="0"/>
+      <xs:element name="ProductType"  type="tns:ProductTypeEnum"/>
+      <xs:element name="Condition"    type="tns:ConditionType"    default="NEW"/>
+      <xs:element name="Status"       type="tns:ProductStatusType"/>
+      <xs:element name="Categories"   type="tns:CategoryRefListType"/>
+      <xs:element name="Tags"         type="cmn:AttributeListType" minOccurs="0"/>
+      <xs:element name="Attributes"   type="cmn:AttributeListType" minOccurs="0"/>
+      <xs:element name="Pricing"      type="tns:ProductPricingType"/>
+      <xs:element name="Variants"     type="tns:ProductVariantListType"/>
+      <xs:element name="Images"       type="cmn:ImageListType"/>
+      <xs:element name="WeightKg"     type="cmn:WeightType"       minOccurs="0"/>
+      <xs:element name="Dimensions"   type="cmn:DimensionsType"   minOccurs="0"/>
+      <xs:element name="DigitalAsset" type="tns:DigitalAssetType" minOccurs="0"/>
+      <xs:element name="ReviewSummary" type="tns:ReviewSummaryType" minOccurs="0"/>
+      <xs:element name="Seo"          type="tns:SeoMetaType"      minOccurs="0"/>
+      <xs:element name="PublishedAt"  type="xs:dateTime"          minOccurs="0"/>
+      <xs:element name="Audit"        type="cmn:AuditType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- REQUEST / RESPONSE WRAPPERS                                 -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="CreateProductRequestType">
+    <xs:sequence>
+      <xs:element name="Name"        type="cmn:ShortStringType"/>
+      <xs:element name="ShortDesc"   type="cmn:ShortStringType"  minOccurs="0"/>
+      <xs:element name="Description" type="cmn:LongTextType"     minOccurs="0"/>
+      <xs:element name="Brand"       type="cmn:ShortStringType"  minOccurs="0"/>
+      <xs:element name="ProductType" type="tns:ProductTypeEnum"/>
+      <xs:element name="Condition"   type="tns:ConditionType"    default="NEW"/>
+      <xs:element name="Categories"  type="tns:CategoryRefListType"/>
+      <xs:element name="Pricing"     type="tns:ProductPricingType"/>
+      <xs:element name="Variants"    type="tns:ProductVariantListType"/>
+      <xs:element name="Images"      type="cmn:ImageListType"    minOccurs="0"/>
+      <xs:element name="Seo"         type="tns:SeoMetaType"      minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CreateProductResponseType">
+    <xs:sequence>
+      <xs:element name="Header"  type="cmn:ResponseHeaderType"/>
+      <xs:element name="Product" type="tns:ProductType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GetProductRequestType">
+    <xs:sequence>
+      <xs:element name="ProductId"      type="cmn:UUIDType" minOccurs="0"/>
+      <xs:element name="Slug"           type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="IncludeReviews" type="xs:boolean" default="false"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GetProductResponseType">
+    <xs:sequence>
+      <xs:element name="Header"  type="cmn:ResponseHeaderType"/>
+      <xs:element name="Product" type="tns:ProductType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SearchProductsRequestType">
+    <xs:sequence>
+      <xs:element name="Keyword"     type="xs:string"             minOccurs="0"/>
+      <xs:element name="CategoryId"  type="cmn:UUIDType"          minOccurs="0"/>
+      <xs:element name="Brand"       type="cmn:ShortStringType"   minOccurs="0"/>
+      <xs:element name="ProductType" type="tns:ProductTypeEnum"   minOccurs="0"/>
+      <xs:element name="Condition"   type="tns:ConditionType"     minOccurs="0"/>
+      <xs:element name="Status"      type="tns:ProductStatusType" minOccurs="0"/>
+      <xs:element name="MinPrice"    type="cmn:MoneyAmountType"   minOccurs="0"/>
+      <xs:element name="MaxPrice"    type="cmn:MoneyAmountType"   minOccurs="0"/>
+      <xs:element name="MinRating"   type="xs:decimal"            minOccurs="0"/>
+      <xs:element name="InStockOnly" type="xs:boolean"            default="false"/>
+      <xs:element name="Attributes"  type="cmn:AttributeListType" minOccurs="0"/>
+      <xs:element name="Pagination"  type="cmn:PaginationType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ProductListType">
+    <xs:sequence>
+      <xs:element name="Product" type="tns:ProductType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SearchProductsResponseType">
+    <xs:sequence>
+      <xs:element name="Header"   type="cmn:ResponseHeaderType"/>
+      <xs:element name="Products" type="tns:ProductListType" minOccurs="0"/>
+      <xs:element name="PageMeta" type="cmn:PageMetaType"    minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Global elements -->
+  <xs:element name="CreateProductRequest"   type="tns:CreateProductRequestType"/>
+  <xs:element name="CreateProductResponse"  type="tns:CreateProductResponseType"/>
+  <xs:element name="GetProductRequest"      type="tns:GetProductRequestType"/>
+  <xs:element name="GetProductResponse"     type="tns:GetProductResponseType"/>
+  <xs:element name="SearchProductsRequest"  type="tns:SearchProductsRequestType"/>
+  <xs:element name="SearchProductsResponse" type="tns:SearchProductsResponseType"/>
+
+</xs:schema>

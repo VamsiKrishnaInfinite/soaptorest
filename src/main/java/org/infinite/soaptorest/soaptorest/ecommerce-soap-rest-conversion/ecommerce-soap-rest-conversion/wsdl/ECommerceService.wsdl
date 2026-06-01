@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  ECommerceService.wsdl                                          ║
+  ║  Version     : 3.0                                              ║
+  ║  Description : Full-featured SOAP 1.1 / 1.2 service definition  ║
+  ║                for an e-commerce platform covering:             ║
+  ║                  • Customer Management                          ║
+  ║                  • Product Catalog                              ║
+  ║                  • Order Management                             ║
+  ║                  • Inventory & Warehouse                        ║
+  ║                  • Promotions & Coupons                         ║
+  ║  XSD imports : common-types.xsd                                 ║
+  ║                customer-types.xsd                               ║
+  ║                catalog-types.xsd                                ║
+  ║                order-types.xsd                                  ║
+  ║                inventory-types.xsd                              ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<wsdl:definitions
+    name="ECommerceService"
+    targetNamespace="http://ecommerce.example.com/wsdl"
+
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+    xmlns:tns="http://ecommerce.example.com/wsdl"
+    xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy"
+    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+    xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+
+    xmlns:cmn="http://ecommerce.example.com/types/common"
+    xmlns:cust="http://ecommerce.example.com/types/customer"
+    xmlns:cat="http://ecommerce.example.com/types/catalog"
+    xmlns:ord="http://ecommerce.example.com/types/order"
+    xmlns:inv="http://ecommerce.example.com/types/inventory">
+
+  <!-- ============================================================ -->
+  <!-- DOCUMENTATION                                               -->
+  <!-- ============================================================ -->
+  <wsdl:documentation>
+    ECommerce Platform Web Service v3.0
+    
+    This service exposes SOAP operations for:
+      1. CustomerService    – CRUD + search for customer accounts
+      2. CatalogService     – product and category management
+      3. OrderService       – order lifecycle from placement to return
+      4. InventoryService   – stock levels, adjustments, purchase orders
+      5. PromotionService   – coupon validation, promotion management
+
+    Security: WS-Security UsernameToken (PasswordDigest) required on all
+              operations except HealthCheck.
+    Transport: HTTPS only.
+    Encoding:  Document/Literal Wrapped.
+  </wsdl:documentation>
+
+  <!-- ============================================================ -->
+  <!-- WS-POLICY (Security)                                        -->
+  <!-- ============================================================ -->
+  <wsp:Policy wsu:Id="UsernameTokenPolicy">
+    <wsp:ExactlyOne>
+      <wsp:All>
+        <!-- Require WS-Security username token with password digest -->
+        <wsp:Policy xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+          <sp:SupportingTokens>
+            <wsp:Policy>
+              <sp:UsernameToken
+                sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                <wsp:Policy>
+                  <sp:WssUsernameToken10/>
+                </wsp:Policy>
+              </sp:UsernameToken>
+            </wsp:Policy>
+          </sp:SupportingTokens>
+        </wsp:Policy>
+      </wsp:All>
+    </wsp:ExactlyOne>
+  </wsp:Policy>
+
+  <!-- ============================================================ -->
+  <!-- TYPES — import all external XSD schemas                     -->
+  <!-- ============================================================ -->
+  <wsdl:types>
+    <xs:schema>
+      <xs:import namespace="http://ecommerce.example.com/types/common"
+                 schemaLocation="xsd/common-types.xsd"/>
+      <xs:import namespace="http://ecommerce.example.com/types/customer"
+                 schemaLocation="xsd/customer-types.xsd"/>
+      <xs:import namespace="http://ecommerce.example.com/types/catalog"
+                 schemaLocation="xsd/catalog-types.xsd"/>
+      <xs:import namespace="http://ecommerce.example.com/types/order"
+                 schemaLocation="xsd/order-types.xsd"/>
+      <xs:import namespace="http://ecommerce.example.com/types/inventory"
+                 schemaLocation="xsd/inventory-types.xsd"/>
+    </xs:schema>
+  </wsdl:types>
+
+  <!-- ============================================================ -->
+  <!-- MESSAGES                                                    -->
+  <!--   Document/Literal Wrapped: one part named "parameters"     -->
+  <!--   pointing to the global element in the imported schema.    -->
+  <!-- ============================================================ -->
+
+  
+  <wsdl:message name="CreateCustomerRequest">
+    <wsdl:part name="parameters" element="cust:CreateCustomerRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CreateCustomerResponse">
+    <wsdl:part name="parameters" element="cust:CreateCustomerResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetCustomerRequest">
+    <wsdl:part name="parameters" element="cust:GetCustomerRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetCustomerResponse">
+    <wsdl:part name="parameters" element="cust:GetCustomerResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="UpdateCustomerRequest">
+    <wsdl:part name="parameters" element="cust:UpdateCustomerRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UpdateCustomerResponse">
+    <wsdl:part name="parameters" element="cust:UpdateCustomerResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="SearchCustomersRequest">
+    <wsdl:part name="parameters" element="cust:SearchCustomersRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SearchCustomersResponse">
+    <wsdl:part name="parameters" element="cust:SearchCustomersResponse"/>
+  </wsdl:message>
+
+  
+  <wsdl:message name="CreateProductRequest">
+    <wsdl:part name="parameters" element="cat:CreateProductRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CreateProductResponse">
+    <wsdl:part name="parameters" element="cat:CreateProductResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetProductRequest">
+    <wsdl:part name="parameters" element="cat:GetProductRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetProductResponse">
+    <wsdl:part name="parameters" element="cat:GetProductResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="SearchProductsRequest">
+    <wsdl:part name="parameters" element="cat:SearchProductsRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SearchProductsResponse">
+    <wsdl:part name="parameters" element="cat:SearchProductsResponse"/>
+  </wsdl:message>
+
+  
+  <wsdl:message name="PlaceOrderRequest">
+    <wsdl:part name="parameters" element="ord:PlaceOrderRequest"/>
+  </wsdl:message>
+  <wsdl:message name="PlaceOrderResponse">
+    <wsdl:part name="parameters" element="ord:PlaceOrderResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetOrderRequest">
+    <wsdl:part name="parameters" element="ord:GetOrderRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetOrderResponse">
+    <wsdl:part name="parameters" element="ord:GetOrderResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="SearchOrdersRequest">
+    <wsdl:part name="parameters" element="ord:SearchOrdersRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SearchOrdersResponse">
+    <wsdl:part name="parameters" element="ord:SearchOrdersResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="UpdateOrderStatusRequest">
+    <wsdl:part name="parameters" element="ord:UpdateOrderStatusRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UpdateOrderStatusResponse">
+    <wsdl:part name="parameters" element="ord:UpdateOrderStatusResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CreateReturnRequest">
+    <wsdl:part name="parameters" element="ord:CreateReturnRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CreateReturnResponse">
+    <wsdl:part name="parameters" element="ord:CreateReturnResponse"/>
+  </wsdl:message>
+
+  
+  <wsdl:message name="GetInventoryLevelRequest">
+    <wsdl:part name="parameters" element="inv:GetInventoryLevelRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetInventoryLevelResponse">
+    <wsdl:part name="parameters" element="inv:GetInventoryLevelResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="AdjustInventoryRequest">
+    <wsdl:part name="parameters" element="inv:AdjustInventoryRequest"/>
+  </wsdl:message>
+  <wsdl:message name="AdjustInventoryResponse">
+    <wsdl:part name="parameters" element="inv:AdjustInventoryResponse"/>
+  </wsdl:message>
+
+  
+  <wsdl:message name="ValidateCouponRequest">
+    <wsdl:part name="parameters" element="inv:ValidateCouponRequest"/>
+  </wsdl:message>
+  <wsdl:message name="ValidateCouponResponse">
+    <wsdl:part name="parameters" element="inv:ValidateCouponResponse"/>
+  </wsdl:message>
+
+  
+  <wsdl:message name="ServiceFault">
+    <wsdl:part name="fault" element="cmn:ServiceError"/>
+  </wsdl:message>
+
+  <!-- ============================================================ -->
+  <!-- PORT TYPES (Abstract Interface)                             -->
+  <!-- ============================================================ -->
+
+  
+  <wsdl:portType name="CustomerPortType">
+    <wsdl:documentation>Operations for managing customer accounts.</wsdl:documentation>
+
+    <wsdl:operation name="CreateCustomer">
+      <wsdl:documentation>
+        Registers a new customer account. Sends a verification email upon success.
+        REST equivalent: POST /v1/customers
+      </wsdl:documentation>
+      <wsdl:input  message="tns:CreateCustomerRequest"  wsaw:Action="urn:CreateCustomer"/>
+      <wsdl:output message="tns:CreateCustomerResponse" wsaw:Action="urn:CreateCustomerResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetCustomer">
+      <wsdl:documentation>
+        Retrieves a customer by ID.
+        REST equivalent: GET /v1/customers/{customerId}
+      </wsdl:documentation>
+      <wsdl:input  message="tns:GetCustomerRequest"  wsaw:Action="urn:GetCustomer"/>
+      <wsdl:output message="tns:GetCustomerResponse" wsaw:Action="urn:GetCustomerResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateCustomer">
+      <wsdl:documentation>
+        Partial update of a customer profile (patch semantics; null fields are ignored).
+        REST equivalent: PATCH /v1/customers/{customerId}
+      </wsdl:documentation>
+      <wsdl:input  message="tns:UpdateCustomerRequest"  wsaw:Action="urn:UpdateCustomer"/>
+      <wsdl:output message="tns:UpdateCustomerResponse" wsaw:Action="urn:UpdateCustomerResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="SearchCustomers">
+      <wsdl:documentation>
+        Paginated search across customer accounts.
+        REST equivalent: GET /v1/customers?email=&amp;status=&amp;tier=&amp;page=&amp;size=
+      </wsdl:documentation>
+      <wsdl:input  message="tns:SearchCustomersRequest"  wsaw:Action="urn:SearchCustomers"/>
+      <wsdl:output message="tns:SearchCustomersResponse" wsaw:Action="urn:SearchCustomersResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  
+  <wsdl:portType name="CatalogPortType">
+    <wsdl:documentation>Operations for product catalog management.</wsdl:documentation>
+
+    <wsdl:operation name="CreateProduct">
+      <wsdl:documentation>
+        Creates a new product with variants and pricing.
+        REST equivalent: POST /v1/products
+      </wsdl:documentation>
+      <wsdl:input  message="tns:CreateProductRequest"  wsaw:Action="urn:CreateProduct"/>
+      <wsdl:output message="tns:CreateProductResponse" wsaw:Action="urn:CreateProductResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetProduct">
+      <wsdl:documentation>
+        Retrieves a product by ID or URL slug.
+        REST equivalent: GET /v1/products/{productId}
+      </wsdl:documentation>
+      <wsdl:input  message="tns:GetProductRequest"  wsaw:Action="urn:GetProduct"/>
+      <wsdl:output message="tns:GetProductResponse" wsaw:Action="urn:GetProductResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="SearchProducts">
+      <wsdl:documentation>
+        Full-text and faceted product search with pagination.
+        REST equivalent: GET /v1/products?keyword=&amp;categoryId=&amp;minPrice=&amp;maxPrice=&amp;page=
+      </wsdl:documentation>
+      <wsdl:input  message="tns:SearchProductsRequest"  wsaw:Action="urn:SearchProducts"/>
+      <wsdl:output message="tns:SearchProductsResponse" wsaw:Action="urn:SearchProductsResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  
+  <wsdl:portType name="OrderPortType">
+    <wsdl:documentation>Operations for order lifecycle management.</wsdl:documentation>
+
+    <wsdl:operation name="PlaceOrder">
+      <wsdl:documentation>
+        Places an order from a cart. Triggers payment capture and inventory reservation.
+        REST equivalent: POST /v1/orders
+      </wsdl:documentation>
+      <wsdl:input  message="tns:PlaceOrderRequest"  wsaw:Action="urn:PlaceOrder"/>
+      <wsdl:output message="tns:PlaceOrderResponse" wsaw:Action="urn:PlaceOrderResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetOrder">
+      <wsdl:documentation>
+        Retrieves a single order by ID or order number.
+        REST equivalent: GET /v1/orders/{orderId}
+      </wsdl:documentation>
+      <wsdl:input  message="tns:GetOrderRequest"  wsaw:Action="urn:GetOrder"/>
+      <wsdl:output message="tns:GetOrderResponse" wsaw:Action="urn:GetOrderResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="SearchOrders">
+      <wsdl:documentation>
+        Paginated order search with multi-facet filters.
+        REST equivalent: GET /v1/orders?customerId=&amp;status=&amp;from=&amp;to=&amp;page=
+      </wsdl:documentation>
+      <wsdl:input  message="tns:SearchOrdersRequest"  wsaw:Action="urn:SearchOrders"/>
+      <wsdl:output message="tns:SearchOrdersResponse" wsaw:Action="urn:SearchOrdersResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateOrderStatus">
+      <wsdl:documentation>
+        Transitions an order to a new status; optionally notifies the customer.
+        REST equivalent: PATCH /v1/orders/{orderId}/status
+      </wsdl:documentation>
+      <wsdl:input  message="tns:UpdateOrderStatusRequest"  wsaw:Action="urn:UpdateOrderStatus"/>
+      <wsdl:output message="tns:UpdateOrderStatusResponse" wsaw:Action="urn:UpdateOrderStatusResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="CreateReturn">
+      <wsdl:documentation>
+        Initiates an RMA (Return Merchandise Authorisation) for one or more line items.
+        REST equivalent: POST /v1/orders/{orderId}/returns
+      </wsdl:documentation>
+      <wsdl:input  message="tns:CreateReturnRequest"  wsaw:Action="urn:CreateReturn"/>
+      <wsdl:output message="tns:CreateReturnResponse" wsaw:Action="urn:CreateReturnResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  
+  <wsdl:portType name="InventoryPortType">
+    <wsdl:documentation>Operations for stock level queries and adjustments.</wsdl:documentation>
+
+    <wsdl:operation name="GetInventoryLevel">
+      <wsdl:documentation>
+        Returns stock levels for a variant across one or all warehouses.
+        REST equivalent: GET /v1/inventory?variantId=&amp;warehouseId=
+      </wsdl:documentation>
+      <wsdl:input  message="tns:GetInventoryLevelRequest"  wsaw:Action="urn:GetInventoryLevel"/>
+      <wsdl:output message="tns:GetInventoryLevelResponse" wsaw:Action="urn:GetInventoryLevelResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="AdjustInventory">
+      <wsdl:documentation>
+        Applies a signed quantity delta to a variant's stock at a given warehouse.
+        REST equivalent: POST /v1/inventory/adjustments
+      </wsdl:documentation>
+      <wsdl:input  message="tns:AdjustInventoryRequest"  wsaw:Action="urn:AdjustInventory"/>
+      <wsdl:output message="tns:AdjustInventoryResponse" wsaw:Action="urn:AdjustInventoryResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  
+  <wsdl:portType name="PromotionPortType">
+    <wsdl:documentation>Operations for coupon and promotion management.</wsdl:documentation>
+
+    <wsdl:operation name="ValidateCoupon">
+      <wsdl:documentation>
+        Validates a coupon code against a customer's cart and computes the discount.
+        REST equivalent: POST /v1/promotions/coupons/validate
+      </wsdl:documentation>
+      <wsdl:input  message="tns:ValidateCouponRequest"  wsaw:Action="urn:ValidateCoupon"/>
+      <wsdl:output message="tns:ValidateCouponResponse" wsaw:Action="urn:ValidateCouponResponse"/>
+      <wsdl:fault  name="ServiceFault" message="tns:ServiceFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- ============================================================ -->
+  <!-- BINDINGS  (SOAP 1.1 Document/Literal Wrapped)               -->
+  <!-- ============================================================ -->
+
+  
+  <wsdl:binding name="CustomerBinding" type="tns:CustomerPortType">
+    <wsp:PolicyReference URI="#UsernameTokenPolicy"/>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="CreateCustomer">
+      <soap:operation soapAction="urn:ECommerceService/CreateCustomer" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetCustomer">
+      <soap:operation soapAction="urn:ECommerceService/GetCustomer" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateCustomer">
+      <soap:operation soapAction="urn:ECommerceService/UpdateCustomer" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="SearchCustomers">
+      <soap:operation soapAction="urn:ECommerceService/SearchCustomers" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  
+  <wsdl:binding name="CustomerBinding12" type="tns:CustomerPortType">
+    <wsp:PolicyReference URI="#UsernameTokenPolicy"/>
+    <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="CreateCustomer">
+      <soap12:operation soapAction="urn:ECommerceService/CreateCustomer" style="document"/>
+      <wsdl:input>  <soap12:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap12:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap12:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetCustomer">
+      <soap12:operation soapAction="urn:ECommerceService/GetCustomer" style="document"/>
+      <wsdl:input>  <soap12:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap12:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap12:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateCustomer">
+      <soap12:operation soapAction="urn:ECommerceService/UpdateCustomer" style="document"/>
+      <wsdl:input>  <soap12:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap12:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap12:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="SearchCustomers">
+      <soap12:operation soapAction="urn:ECommerceService/SearchCustomers" style="document"/>
+      <wsdl:input>  <soap12:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap12:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap12:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  
+  <wsdl:binding name="CatalogBinding" type="tns:CatalogPortType">
+    <wsp:PolicyReference URI="#UsernameTokenPolicy"/>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="CreateProduct">
+      <soap:operation soapAction="urn:ECommerceService/CreateProduct" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetProduct">
+      <soap:operation soapAction="urn:ECommerceService/GetProduct" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="SearchProducts">
+      <soap:operation soapAction="urn:ECommerceService/SearchProducts" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  
+  <wsdl:binding name="OrderBinding" type="tns:OrderPortType">
+    <wsp:PolicyReference URI="#UsernameTokenPolicy"/>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="PlaceOrder">
+      <soap:operation soapAction="urn:ECommerceService/PlaceOrder" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetOrder">
+      <soap:operation soapAction="urn:ECommerceService/GetOrder" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="SearchOrders">
+      <soap:operation soapAction="urn:ECommerceService/SearchOrders" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateOrderStatus">
+      <soap:operation soapAction="urn:ECommerceService/UpdateOrderStatus" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="CreateReturn">
+      <soap:operation soapAction="urn:ECommerceService/CreateReturn" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  
+  <wsdl:binding name="InventoryBinding" type="tns:InventoryPortType">
+    <wsp:PolicyReference URI="#UsernameTokenPolicy"/>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="GetInventoryLevel">
+      <soap:operation soapAction="urn:ECommerceService/GetInventoryLevel" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="AdjustInventory">
+      <soap:operation soapAction="urn:ECommerceService/AdjustInventory" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  
+  <wsdl:binding name="PromotionBinding" type="tns:PromotionPortType">
+    <wsp:PolicyReference URI="#UsernameTokenPolicy"/>
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="ValidateCoupon">
+      <soap:operation soapAction="urn:ECommerceService/ValidateCoupon" style="document"/>
+      <wsdl:input>  <soap:body use="literal"/> </wsdl:input>
+      <wsdl:output> <soap:body use="literal"/> </wsdl:output>
+      <wsdl:fault name="ServiceFault"> <soap:fault name="ServiceFault" use="literal"/> </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- ============================================================ -->
+  <!-- SERVICE (Concrete Endpoint)                                 -->
+  <!-- ============================================================ -->
+  <wsdl:service name="ECommerceService">
+    <wsdl:documentation>
+      ECommerce Platform SOAP Service endpoints.
+      Base URL: https://api.ecommerce.example.com/soap/v3
+    </wsdl:documentation>
+
+    <wsdl:port name="CustomerPort" binding="tns:CustomerBinding">
+      <soap:address location="https://api.ecommerce.example.com/soap/v3/customers"/>
+    </wsdl:port>
+
+    <wsdl:port name="CustomerPort12" binding="tns:CustomerBinding12">
+      <soap12:address location="https://api.ecommerce.example.com/soap/v3/customers"/>
+    </wsdl:port>
+
+    <wsdl:port name="CatalogPort" binding="tns:CatalogBinding">
+      <soap:address location="https://api.ecommerce.example.com/soap/v3/catalog"/>
+    </wsdl:port>
+
+    <wsdl:port name="OrderPort" binding="tns:OrderBinding">
+      <soap:address location="https://api.ecommerce.example.com/soap/v3/orders"/>
+    </wsdl:port>
+
+    <wsdl:port name="InventoryPort" binding="tns:InventoryBinding">
+      <soap:address location="https://api.ecommerce.example.com/soap/v3/inventory"/>
+    </wsdl:port>
+
+    <wsdl:port name="PromotionPort" binding="tns:PromotionBinding">
+      <soap:address location="https://api.ecommerce.example.com/soap/v3/promotions"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

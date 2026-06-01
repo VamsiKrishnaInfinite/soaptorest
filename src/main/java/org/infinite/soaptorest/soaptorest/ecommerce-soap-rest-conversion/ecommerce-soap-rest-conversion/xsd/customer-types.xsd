@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://ecommerce.example.com/types/customer"
+           xmlns:cmn="http://ecommerce.example.com/types/common"
+           targetNamespace="http://ecommerce.example.com/types/customer"
+           elementFormDefault="qualified">
+
+  <xs:import namespace="http://ecommerce.example.com/types/common"
+             schemaLocation="common-types.xsd"/>
+
+  <!-- ============================================================ -->
+  <!-- ENUMERATIONS                                                 -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="CustomerStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ACTIVE"/>
+      <xs:enumeration value="INACTIVE"/>
+      <xs:enumeration value="SUSPENDED"/>
+      <xs:enumeration value="PENDING_VERIFICATION"/>
+      <xs:enumeration value="DELETED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CustomerTierType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BRONZE"/>
+      <xs:enumeration value="SILVER"/>
+      <xs:enumeration value="GOLD"/>
+      <xs:enumeration value="PLATINUM"/>
+      <xs:enumeration value="VIP"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="GenderType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MALE"/>
+      <xs:enumeration value="FEMALE"/>
+      <xs:enumeration value="NON_BINARY"/>
+      <xs:enumeration value="PREFER_NOT_TO_SAY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="AuthProviderType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LOCAL"/>
+      <xs:enumeration value="GOOGLE"/>
+      <xs:enumeration value="FACEBOOK"/>
+      <xs:enumeration value="APPLE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NotificationChannelType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EMAIL"/>
+      <xs:enumeration value="SMS"/>
+      <xs:enumeration value="PUSH"/>
+      <xs:enumeration value="WHATSAPP"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ============================================================ -->
+  <!-- LOYALTY / REWARDS                                           -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="LoyaltyAccountType">
+    <xs:sequence>
+      <xs:element name="LoyaltyId"          type="cmn:UUIDType"/>
+      <xs:element name="PointsBalance"       type="xs:nonNegativeInteger"/>
+      <xs:element name="LifetimePoints"      type="xs:nonNegativeInteger"/>
+      <xs:element name="Tier"                type="tns:CustomerTierType"/>
+      <xs:element name="TierExpiryDate"      type="xs:date"   minOccurs="0"/>
+      <xs:element name="RedemptionThreshold" type="xs:nonNegativeInteger"/>
+      <xs:element name="PointsExpirySoonQty" type="xs:nonNegativeInteger" minOccurs="0"/>
+      <xs:element name="PointsExpiryDate"    type="xs:date"   minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- PAYMENT METHOD                                              -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="PaymentMethodTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CREDIT_CARD"/>
+      <xs:enumeration value="DEBIT_CARD"/>
+      <xs:enumeration value="PAYPAL"/>
+      <xs:enumeration value="BANK_TRANSFER"/>
+      <xs:enumeration value="CRYPTO"/>
+      <xs:enumeration value="GIFT_CARD"/>
+      <xs:enumeration value="BUY_NOW_PAY_LATER"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="SavedPaymentMethodType">
+    <xs:sequence>
+      <xs:element name="PaymentMethodId"  type="cmn:UUIDType"/>
+      <xs:element name="MethodType"       type="tns:PaymentMethodTypeEnum"/>
+      <xs:element name="DisplayLabel"     type="cmn:ShortStringType"/>
+      <!-- Masked PAN, e.g. ****-****-****-1234 -->
+      <xs:element name="MaskedIdentifier" type="xs:string"   minOccurs="0"/>
+      <xs:element name="ExpiryMonth"      type="xs:gMonth"   minOccurs="0"/>
+      <xs:element name="ExpiryYear"       type="xs:gYear"    minOccurs="0"/>
+      <xs:element name="BillingAddress"   type="cmn:AddressType" minOccurs="0"/>
+      <xs:element name="IsDefault"        type="xs:boolean"  default="false"/>
+      <xs:element name="TokenReference"   type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SavedPaymentMethodListType">
+    <xs:sequence>
+      <xs:element name="PaymentMethod" type="tns:SavedPaymentMethodType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- NOTIFICATION PREFERENCES                                    -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="NotificationPreferenceType">
+    <xs:sequence>
+      <xs:element name="Channel"       type="tns:NotificationChannelType"/>
+      <xs:element name="OrderUpdates"  type="xs:boolean" default="true"/>
+      <xs:element name="Promotions"    type="xs:boolean" default="false"/>
+      <xs:element name="WishlistAlerts" type="xs:boolean" default="false"/>
+      <xs:element name="Newsletter"    type="xs:boolean" default="false"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NotificationPreferenceListType">
+    <xs:sequence>
+      <xs:element name="Preference" type="tns:NotificationPreferenceType"
+                  minOccurs="0" maxOccurs="4"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- ADDRESS LIST                                                -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="AddressListType">
+    <xs:sequence>
+      <xs:element name="Address" type="cmn:AddressType"
+                  minOccurs="0" maxOccurs="10"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- CUSTOMER CORE                                               -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="CustomerType">
+    <xs:sequence>
+      <xs:element name="CustomerId"       type="cmn:UUIDType"/>
+      <xs:element name="ExternalId"       type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="FirstName"        type="cmn:ShortStringType"/>
+      <xs:element name="LastName"         type="cmn:ShortStringType"/>
+      <xs:element name="DisplayName"      type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="Email"            type="cmn:EmailType"/>
+      <xs:element name="EmailVerified"    type="xs:boolean" default="false"/>
+      <xs:element name="Phone"            type="cmn:PhoneType" minOccurs="0"/>
+      <xs:element name="PhoneVerified"    type="xs:boolean" default="false"/>
+      <xs:element name="DateOfBirth"      type="xs:date"    minOccurs="0"/>
+      <xs:element name="Gender"           type="tns:GenderType" minOccurs="0"/>
+      <xs:element name="AvatarUrl"        type="cmn:UrlType" minOccurs="0"/>
+      <xs:element name="PreferredLanguage" type="cmn:LanguageCodeType" default="en"/>
+      <xs:element name="PreferredCurrency" type="cmn:CurrencyCodeType" default="USD"/>
+      <xs:element name="Status"           type="tns:CustomerStatusType"/>
+      <xs:element name="AuthProvider"     type="tns:AuthProviderType" default="LOCAL"/>
+      <xs:element name="Addresses"        type="tns:AddressListType"/>
+      <xs:element name="SavedPayments"    type="tns:SavedPaymentMethodListType"/>
+      <xs:element name="LoyaltyAccount"   type="tns:LoyaltyAccountType" minOccurs="0"/>
+      <xs:element name="Notifications"    type="tns:NotificationPreferenceListType"/>
+      <xs:element name="Tags"             type="cmn:AttributeListType" minOccurs="0"/>
+      <xs:element name="Audit"            type="cmn:AuditType"/>
+    </xs:sequence>
+    <xs:attribute name="schemaVersion" type="xs:string" use="optional" fixed="2.0"/>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- REQUEST / RESPONSE WRAPPERS                                 -->
+  <!-- ============================================================ -->
+
+  <!-- Create Customer -->
+  <xs:complexType name="CreateCustomerRequestType">
+    <xs:sequence>
+      <xs:element name="FirstName"        type="cmn:ShortStringType"/>
+      <xs:element name="LastName"         type="cmn:ShortStringType"/>
+      <xs:element name="Email"            type="cmn:EmailType"/>
+      <xs:element name="Password"         type="xs:string" minOccurs="0"/>
+      <xs:element name="Phone"            type="cmn:PhoneType"  minOccurs="0"/>
+      <xs:element name="DateOfBirth"      type="xs:date"        minOccurs="0"/>
+      <xs:element name="Gender"           type="tns:GenderType" minOccurs="0"/>
+      <xs:element name="PreferredLanguage" type="cmn:LanguageCodeType" minOccurs="0"/>
+      <xs:element name="PreferredCurrency" type="cmn:CurrencyCodeType" minOccurs="0"/>
+      <xs:element name="AuthProvider"     type="tns:AuthProviderType"  default="LOCAL"/>
+      <xs:element name="ExternalToken"    type="xs:string"      minOccurs="0"/>
+      <xs:element name="ReferralCode"     type="xs:string"      minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CreateCustomerResponseType">
+    <xs:sequence>
+      <xs:element name="Header"   type="cmn:ResponseHeaderType"/>
+      <xs:element name="Customer" type="tns:CustomerType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Get Customer -->
+  <xs:complexType name="GetCustomerRequestType">
+    <xs:sequence>
+      <xs:element name="CustomerId" type="cmn:UUIDType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GetCustomerResponseType">
+    <xs:sequence>
+      <xs:element name="Header"   type="cmn:ResponseHeaderType"/>
+      <xs:element name="Customer" type="tns:CustomerType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Update Customer -->
+  <xs:complexType name="UpdateCustomerRequestType">
+    <xs:sequence>
+      <xs:element name="CustomerId"       type="cmn:UUIDType"/>
+      <xs:element name="FirstName"        type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="LastName"         type="cmn:ShortStringType" minOccurs="0"/>
+      <xs:element name="Phone"            type="cmn:PhoneType"       minOccurs="0"/>
+      <xs:element name="DateOfBirth"      type="xs:date"             minOccurs="0"/>
+      <xs:element name="Gender"           type="tns:GenderType"      minOccurs="0"/>
+      <xs:element name="PreferredLanguage" type="cmn:LanguageCodeType" minOccurs="0"/>
+      <xs:element name="PreferredCurrency" type="cmn:CurrencyCodeType" minOccurs="0"/>
+      <xs:element name="AvatarUrl"        type="cmn:UrlType"         minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="UpdateCustomerResponseType">
+    <xs:sequence>
+      <xs:element name="Header"   type="cmn:ResponseHeaderType"/>
+      <xs:element name="Customer" type="tns:CustomerType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Search Customers -->
+  <xs:complexType name="SearchCustomersRequestType">
+    <xs:sequence>
+      <xs:element name="Email"          type="cmn:EmailType"       minOccurs="0"/>
+      <xs:element name="NameFragment"   type="xs:string"           minOccurs="0"/>
+      <xs:element name="Status"         type="tns:CustomerStatusType" minOccurs="0"/>
+      <xs:element name="Tier"           type="tns:CustomerTierType" minOccurs="0"/>
+      <xs:element name="RegistrationDateRange" type="cmn:DateRangeType" minOccurs="0"/>
+      <xs:element name="Pagination"     type="cmn:PaginationType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CustomerListType">
+    <xs:sequence>
+      <xs:element name="Customer" type="tns:CustomerType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SearchCustomersResponseType">
+    <xs:sequence>
+      <xs:element name="Header"    type="cmn:ResponseHeaderType"/>
+      <xs:element name="Customers" type="tns:CustomerListType" minOccurs="0"/>
+      <xs:element name="PageMeta"  type="cmn:PageMetaType"     minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- GLOBAL ELEMENTS (document roots / message parts)            -->
+  <!-- ============================================================ -->
+  <xs:element name="CreateCustomerRequest"  type="tns:CreateCustomerRequestType"/>
+  <xs:element name="CreateCustomerResponse" type="tns:CreateCustomerResponseType"/>
+  <xs:element name="GetCustomerRequest"     type="tns:GetCustomerRequestType"/>
+  <xs:element name="GetCustomerResponse"    type="tns:GetCustomerResponseType"/>
+  <xs:element name="UpdateCustomerRequest"  type="tns:UpdateCustomerRequestType"/>
+  <xs:element name="UpdateCustomerResponse" type="tns:UpdateCustomerResponseType"/>
+  <xs:element name="SearchCustomersRequest" type="tns:SearchCustomersRequestType"/>
+  <xs:element name="SearchCustomersResponse" type="tns:SearchCustomersResponseType"/>
+
+</xs:schema>

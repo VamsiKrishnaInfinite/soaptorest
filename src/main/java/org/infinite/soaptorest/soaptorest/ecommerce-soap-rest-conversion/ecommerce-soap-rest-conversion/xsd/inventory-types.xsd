@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://ecommerce.example.com/types/inventory"
+           xmlns:cmn="http://ecommerce.example.com/types/common"
+           targetNamespace="http://ecommerce.example.com/types/inventory"
+           elementFormDefault="qualified">
+
+  <xs:import namespace="http://ecommerce.example.com/types/common"
+             schemaLocation="common-types.xsd"/>
+
+  <!-- ============================================================ -->
+  <!-- ENUMERATIONS                                                 -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="InventoryAdjustmentReasonType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PURCHASE_ORDER"/>
+      <xs:enumeration value="SALE"/>
+      <xs:enumeration value="RETURN"/>
+      <xs:enumeration value="DAMAGE"/>
+      <xs:enumeration value="THEFT"/>
+      <xs:enumeration value="CYCLE_COUNT"/>
+      <xs:enumeration value="TRANSFER"/>
+      <xs:enumeration value="INITIAL_STOCK"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="WarehouseStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ACTIVE"/>
+      <xs:enumeration value="INACTIVE"/>
+      <xs:enumeration value="MAINTENANCE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PromotionStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DRAFT"/>
+      <xs:enumeration value="SCHEDULED"/>
+      <xs:enumeration value="ACTIVE"/>
+      <xs:enumeration value="PAUSED"/>
+      <xs:enumeration value="EXPIRED"/>
+      <xs:enumeration value="CANCELLED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CouponTypeEnum">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SINGLE_USE"/>
+      <xs:enumeration value="MULTI_USE"/>
+      <xs:enumeration value="ONE_PER_CUSTOMER"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ============================================================ -->
+  <!-- WAREHOUSE                                                   -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="WarehouseType">
+    <xs:sequence>
+      <xs:element name="WarehouseId"   type="cmn:UUIDType"/>
+      <xs:element name="Code"          type="cmn:ShortStringType"/>
+      <xs:element name="Name"          type="cmn:ShortStringType"/>
+      <xs:element name="Address"       type="cmn:AddressType"/>
+      <xs:element name="Phone"         type="cmn:PhoneType"          minOccurs="0"/>
+      <xs:element name="Email"         type="cmn:EmailType"          minOccurs="0"/>
+      <xs:element name="Status"        type="tns:WarehouseStatusType"/>
+      <xs:element name="IsDefault"     type="xs:boolean"             default="false"/>
+      <xs:element name="Metadata"      type="cmn:AttributeListType"  minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- INVENTORY LEVEL                                             -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="InventoryLevelType">
+    <xs:sequence>
+      <xs:element name="InventoryId"    type="cmn:UUIDType"/>
+      <xs:element name="VariantId"      type="cmn:UUIDType"/>
+      <xs:element name="WarehouseId"    type="cmn:UUIDType"/>
+      <xs:element name="QuantityOnHand" type="cmn:QuantityType"/>
+      <xs:element name="QuantityReserved" type="cmn:QuantityType"/>
+      <xs:element name="QuantityAvailable" type="cmn:QuantityType"/>
+      <xs:element name="QuantityIncoming" type="cmn:QuantityType" default="0"/>
+      <xs:element name="LowStockThreshold" type="cmn:QuantityType" minOccurs="0"/>
+      <xs:element name="ReorderPoint"   type="cmn:QuantityType"    minOccurs="0"/>
+      <xs:element name="ReorderQty"     type="cmn:QuantityType"    minOccurs="0"/>
+      <xs:element name="LastCountDate"  type="xs:dateTime"         minOccurs="0"/>
+      <xs:element name="UpdatedAt"      type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- INVENTORY ADJUSTMENT                                        -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="InventoryAdjustmentType">
+    <xs:sequence>
+      <xs:element name="AdjustmentId"  type="cmn:UUIDType"/>
+      <xs:element name="VariantId"     type="cmn:UUIDType"/>
+      <xs:element name="WarehouseId"   type="cmn:UUIDType"/>
+      <xs:element name="QuantityDelta" type="xs:integer"/>
+      <xs:element name="QuantityBefore" type="cmn:QuantityType"/>
+      <xs:element name="QuantityAfter"  type="cmn:QuantityType"/>
+      <xs:element name="Reason"        type="tns:InventoryAdjustmentReasonType"/>
+      <xs:element name="ReferenceId"   type="xs:string"           minOccurs="0"/>
+      <xs:element name="Notes"         type="cmn:LongTextType"    minOccurs="0"/>
+      <xs:element name="AdjustedBy"    type="cmn:UUIDType"/>
+      <xs:element name="AdjustedAt"    type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- PURCHASE ORDER                                              -->
+  <!-- ============================================================ -->
+
+  <xs:simpleType name="PurchaseOrderStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DRAFT"/>
+      <xs:enumeration value="SUBMITTED"/>
+      <xs:enumeration value="PARTIALLY_RECEIVED"/>
+      <xs:enumeration value="RECEIVED"/>
+      <xs:enumeration value="CANCELLED"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="PurchaseOrderLineType">
+    <xs:sequence>
+      <xs:element name="LineId"         type="cmn:UUIDType"/>
+      <xs:element name="VariantId"      type="cmn:UUIDType"/>
+      <xs:element name="SKU"            type="cmn:ShortStringType"/>
+      <xs:element name="QuantityOrdered" type="cmn:QuantityType"/>
+      <xs:element name="QuantityReceived" type="cmn:QuantityType" default="0"/>
+      <xs:element name="UnitCost"       type="cmn:MoneyType"/>
+      <xs:element name="LineTotal"      type="cmn:MoneyType"/>
+      <xs:element name="ExpectedArrival" type="xs:date"           minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PurchaseOrderType">
+    <xs:sequence>
+      <xs:element name="POId"          type="cmn:UUIDType"/>
+      <xs:element name="PONumber"      type="cmn:ShortStringType"/>
+      <xs:element name="SupplierId"    type="cmn:UUIDType"/>
+      <xs:element name="WarehouseId"   type="cmn:UUIDType"/>
+      <xs:element name="Status"        type="tns:PurchaseOrderStatusType"/>
+      <xs:element name="Lines">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Line" type="tns:PurchaseOrderLineType"
+                        minOccurs="1" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="OrderTotal"    type="cmn:MoneyType"/>
+      <xs:element name="ExpectedDate"  type="xs:date"          minOccurs="0"/>
+      <xs:element name="Notes"         type="cmn:LongTextType" minOccurs="0"/>
+      <xs:element name="Audit"         type="cmn:AuditType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- PROMOTIONS                                                  -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="PromotionConditionType">
+    <xs:sequence>
+      <xs:element name="ConditionType">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="MIN_ORDER_VALUE"/>
+            <xs:enumeration value="MIN_QUANTITY"/>
+            <xs:enumeration value="CUSTOMER_TIER"/>
+            <xs:enumeration value="PRODUCT_IN_CART"/>
+            <xs:enumeration value="CATEGORY_IN_CART"/>
+            <xs:enumeration value="FIRST_ORDER"/>
+            <xs:enumeration value="CUSTOMER_TAG"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="ConditionValue" type="xs:string"/>
+      <xs:element name="Operator">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="EQUALS"/>
+            <xs:enumeration value="GREATER_THAN"/>
+            <xs:enumeration value="LESS_THAN"/>
+            <xs:enumeration value="CONTAINS"/>
+            <xs:enumeration value="IN"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PromotionActionType">
+    <xs:sequence>
+      <xs:element name="ActionType">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="PERCENT_OFF_ORDER"/>
+            <xs:enumeration value="FIXED_OFF_ORDER"/>
+            <xs:enumeration value="PERCENT_OFF_PRODUCT"/>
+            <xs:enumeration value="FIXED_OFF_PRODUCT"/>
+            <xs:enumeration value="FREE_SHIPPING"/>
+            <xs:enumeration value="FREE_PRODUCT"/>
+            <xs:enumeration value="LOYALTY_POINTS_MULTIPLIER"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="ActionValue"   type="xs:decimal"/>
+      <xs:element name="MaxDiscount"   type="cmn:MoneyAmountType" minOccurs="0"/>
+      <xs:element name="FreeProductId" type="cmn:UUIDType"        minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CouponType">
+    <xs:sequence>
+      <xs:element name="CouponId"       type="cmn:UUIDType"/>
+      <xs:element name="Code"           type="cmn:ShortStringType"/>
+      <xs:element name="CouponType"     type="tns:CouponTypeEnum"/>
+      <xs:element name="UsageLimit"     type="xs:positiveInteger" minOccurs="0"/>
+      <xs:element name="UsageCount"     type="xs:nonNegativeInteger" default="0"/>
+      <xs:element name="PerCustomerLimit" type="xs:positiveInteger" minOccurs="0"/>
+      <xs:element name="IsActive"       type="xs:boolean" default="true"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CouponListType">
+    <xs:sequence>
+      <xs:element name="Coupon" type="tns:CouponType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PromotionType">
+    <xs:sequence>
+      <xs:element name="PromotionId"   type="cmn:UUIDType"/>
+      <xs:element name="Name"          type="cmn:ShortStringType"/>
+      <xs:element name="Description"   type="cmn:LongTextType"    minOccurs="0"/>
+      <xs:element name="Status"        type="tns:PromotionStatusType"/>
+      <xs:element name="Priority"      type="xs:positiveInteger" default="100"/>
+      <xs:element name="IsStackable"   type="xs:boolean" default="false"/>
+      <xs:element name="StartDate"     type="xs:dateTime"/>
+      <xs:element name="EndDate"       type="xs:dateTime"         minOccurs="0"/>
+      <xs:element name="Conditions">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Condition" type="tns:PromotionConditionType"
+                        minOccurs="0" maxOccurs="10"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Actions">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Action" type="tns:PromotionActionType"
+                        minOccurs="1" maxOccurs="5"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Coupons"       type="tns:CouponListType"  minOccurs="0"/>
+      <xs:element name="Audit"         type="cmn:AuditType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- ============================================================ -->
+  <!-- REQUEST / RESPONSE WRAPPERS                                 -->
+  <!-- ============================================================ -->
+
+  <xs:complexType name="GetInventoryLevelRequestType">
+    <xs:sequence>
+      <xs:element name="VariantId"  type="cmn:UUIDType" minOccurs="0"/>
+      <xs:element name="WarehouseId" type="cmn:UUIDType" minOccurs="0"/>
+      <xs:element name="ProductId"  type="cmn:UUIDType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="InventoryLevelListType">
+    <xs:sequence>
+      <xs:element name="InventoryLevel" type="tns:InventoryLevelType"
+                  minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GetInventoryLevelResponseType">
+    <xs:sequence>
+      <xs:element name="Header"   type="cmn:ResponseHeaderType"/>
+      <xs:element name="Levels"   type="tns:InventoryLevelListType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AdjustInventoryRequestType">
+    <xs:sequence>
+      <xs:element name="VariantId"     type="cmn:UUIDType"/>
+      <xs:element name="WarehouseId"   type="cmn:UUIDType"/>
+      <xs:element name="QuantityDelta" type="xs:integer"/>
+      <xs:element name="Reason"        type="tns:InventoryAdjustmentReasonType"/>
+      <xs:element name="ReferenceId"   type="xs:string"          minOccurs="0"/>
+      <xs:element name="Notes"         type="cmn:LongTextType"   minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AdjustInventoryResponseType">
+    <xs:sequence>
+      <xs:element name="Header"     type="cmn:ResponseHeaderType"/>
+      <xs:element name="Adjustment" type="tns:InventoryAdjustmentType" minOccurs="0"/>
+      <xs:element name="NewLevel"   type="tns:InventoryLevelType"      minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ValidateCouponRequestType">
+    <xs:sequence>
+      <xs:element name="CouponCode"   type="cmn:ShortStringType"/>
+      <xs:element name="CustomerId"   type="cmn:UUIDType"/>
+      <xs:element name="OrderValue"   type="cmn:MoneyType"/>
+      <xs:element name="CartContents" type="cmn:AttributeListType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ValidateCouponResponseType">
+    <xs:sequence>
+      <xs:element name="Header"          type="cmn:ResponseHeaderType"/>
+      <xs:element name="IsValid"         type="xs:boolean"/>
+      <xs:element name="DiscountAmount"  type="cmn:MoneyType"          minOccurs="0"/>
+      <xs:element name="PromotionId"     type="cmn:UUIDType"           minOccurs="0"/>
+      <xs:element name="PromotionName"   type="cmn:ShortStringType"    minOccurs="0"/>
+      <xs:element name="ValidationMessage" type="cmn:ShortStringType"  minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Global elements -->
+  <xs:element name="GetInventoryLevelRequest"   type="tns:GetInventoryLevelRequestType"/>
+  <xs:element name="GetInventoryLevelResponse"  type="tns:GetInventoryLevelResponseType"/>
+  <xs:element name="AdjustInventoryRequest"     type="tns:AdjustInventoryRequestType"/>
+  <xs:element name="AdjustInventoryResponse"    type="tns:AdjustInventoryResponseType"/>
+  <xs:element name="ValidateCouponRequest"      type="tns:ValidateCouponRequestType"/>
+  <xs:element name="ValidateCouponResponse"     type="tns:ValidateCouponResponseType"/>
+
+</xs:schema>
